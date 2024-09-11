@@ -4,6 +4,7 @@ export type Product = {
   description: string;
   price: number;
   images: string[];
+  category?: string;
 };
 
 export const fetchProducts = async (

@@ -4,6 +4,8 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchProducts, Product, searchProducts } from "./utils/api";
 import { useDebounce } from "./utils/hooks";
+import ProductCard from "./components/ProductCard";
+import Modal from "./components/reusables/Modal";
 
 function App() {
   const [searchText, setSearchText] = useState("");
@@ -26,8 +28,6 @@ function App() {
   };
   const onNextPageClick = () => navigate(`/page/${+page + 1}`);
   const onPrevPageClick = () => navigate(`/page/${+page - 1}`);
-
-  // useDebounce(() => searchProducts(searchText), [searchText], 500);
 
   const {
     data: products,
@@ -60,14 +60,6 @@ function App() {
       handleRedirectToHome();
     }
   }, [page, displayProducts]);
-
-  // this effect does not redirect
-  // if has searchText, will see emptypage when if no results on the current page number
-  // useEffect(() => {
-  //   if (page == 1) {
-  //     navigate("/", { replace: true });
-  //   }
-  // }, [page]);
 
   // redirect on searchText
   useEffect(() => {
@@ -112,37 +104,54 @@ function App() {
         <span> searching...</span>
       ) : null}
 
-      {/* PRODUCTS */}
-      <ul>
+      {/* PRODUCT LIST & MODAL */}
+      <div className="border border-gray-300">
         {displayProducts?.map((product) => (
-          <li
+          <Modal
             key={product.id}
-            className="border-x first:border-t last:border-b border-gray-300 p-4"
+            buttonTrigger={
+              <ProductCard
+                id={product.id}
+                title={product.title}
+                description={product.description}
+                price={product.price}
+                images={product.images}
+              />
+            }
           >
-            <div className="flex flex-col sm:flex-row gap-x-8">
-              <div className="flex size-40 items-center justify-center shrink-0 m-auto">
-                <img
-                  src={product.images[0]}
-                  alt={product.title}
-                  className="h-full"
-                />
+            {/* MODAL CONTENT */}
+            <div className="text-gray-700 space-y-4">
+              <div>
+                <p className="uppercase">{product.category}</p>
+                <h4 className="text-3xl font-semibold text-black">
+                  {product.title}
+                </h4>
               </div>
-              <div className="flex flex-col md:flex-row justify-between w-full gap-8">
-                <div className="space-y-2 my-auto">
-                  <div className="font-semibold">{product.title}</div>
-                  <p>{product.description}</p>
+              <p className="font-medium">{product.description}</p>
+              <p className="font-semibold text-black">₱ {product.price}</p>
+              <div className="bg-gray-100 rounded p-4">
+                <p className="font-semibold">MORE IMAGES</p>
+                <div className="flex flex-col md:flex-row justify-evenly items-center">
+                  {product.images.length > 0
+                    ? product.images
+                        .slice(0, 4)
+                        .map((image, index) => (
+                          <img
+                            key={`${product.id}_${index}`}
+                            src={image}
+                            alt={product.title}
+                            className="w-[100px] sm:w-[150px]"
+                          />
+                        ))
+                    : "NO AVAILABLE IMAGES"}
                 </div>
-                <p className="min-w-[100px] my-auto">
-                  <span className="font-bold mr-2">₱</span>
-                  {product.price}
-                </p>
               </div>
             </div>
-          </li>
+          </Modal>
         ))}
-      </ul>
+      </div>
 
-      {/* FOOTER */}
+      {/* PAGINATION FOOTER */}
       <div>
         <button onClick={onPrevPageClick} disabled={+page === 1}>
           Previous
