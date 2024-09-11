@@ -153,6 +153,13 @@ function App() {
         </div>
       ) : displayProducts && displayProducts.length > 0 ? (
         <div className="border border-gray-300">
+          <div className="flex justify-center text-start border-b bg-gray-200 font-bold">
+            <h3 className="hidden sm:flex sm:w-[210px] shrink-0 p-8">
+              Thumbnail
+            </h3>
+            <h3 className="w-full hidden sm:flex py-8">Name</h3>
+            <h3 className="w-[115px] shrink-0 hidden md:flex py-8">Price</h3>
+          </div>
           {displayProducts?.map((product) => (
             <Modal
               key={product.id}
