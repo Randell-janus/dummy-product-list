@@ -1,4 +1,4 @@
-This is a project created with Vite + React
+This is a project created with Vite + React. Products are pulled from https://dummyjson.com/
 
 - Caching product list and debounced search to optimize API/network calls.
 - Pagination and storing page in URL for better browser accessibility
