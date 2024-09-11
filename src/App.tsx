@@ -1,13 +1,22 @@
 import { useEffect, useState } from "react";
-import { Input } from "@material-tailwind/react";
+import { Button, Input, Spinner } from "@material-tailwind/react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
-import { fetchProducts, Product, searchProducts } from "./utils/api";
+import {
+  addToCart,
+  fetchProducts,
+  getCartItems,
+  Product,
+  removeFromCart,
+  searchProducts,
+} from "./utils/api";
 import { useDebounce } from "./utils/hooks";
 import ProductCard from "./components/ProductCard";
 import Modal from "./components/reusables/Modal";
+import Menu from "./components/reusables/Menu";
 
 function App() {
+  const [cartItems, setCartItems] = useState<Product[]>([]);
   const [searchText, setSearchText] = useState("");
   const debouncedSearchText = useDebounce(searchText, 500);
 
@@ -33,7 +42,6 @@ function App() {
     data: products,
     isPending,
     isError,
-    error,
     isFetching,
   } = useQuery<Product[]>({
     queryKey: ["products", page],
@@ -68,19 +76,53 @@ function App() {
     }
   }, [debouncedSearchText]);
 
-  if (isPending) return <p>Loading products...</p>;
+  const handleAddToCart = (product: Product) => {
+    addToCart(product);
+    setCartItems(getCartItems());
+  };
+
+  const handleRemoveFromCart = (productId: number) => {
+    removeFromCart(productId);
+    setCartItems(getCartItems());
+  };
+
+  useEffect(() => {
+    setCartItems(getCartItems());
+  }, []);
+
   if (isError) return <p>Error fetching products</p>;
 
   return (
-    <div className="max-w-screen-xl h-screen mx-auto px-8 py-24 space-y-8">
+    <div className="max-w-screen-xl mx-auto px-8 py-24 space-y-8">
       {/* NAVIGATION */}
       <nav className="font-bold flex justify-between items-end py-4 border-b border-gray-400">
         <h1 className="text-4xl">Products Demo</h1>
-        <button>
-          <span className="material-symbols-outlined font-bold">
-            shopping_cart
-          </span>
-        </button>
+        {/* CART ITEMS */}
+        <Menu
+          buttonTrigger={
+            <button className="flex items-center gap-2">
+              CHECK CART
+              <span className="material-symbols-outlined font-bold">
+                shopping_cart
+              </span>
+            </button>
+          }
+        >
+          {cartItems.length > 0 ? (
+            cartItems.map((product) => (
+              <div className="max-w-xl" key={product.id}>
+                <ProductCard
+                  product={product}
+                  imageClassName="h-auto w-[100px]"
+                  showDescription={false}
+                  onRemoveFromCart={() => handleRemoveFromCart(product.id)}
+                />
+              </div>
+            ))
+          ) : (
+            <div>NO ITEMS IN CART</div>
+          )}
+        </Menu>
       </nav>
 
       {/* SEARCH BAR */}
@@ -100,68 +142,94 @@ function App() {
           </button>
         )}
       </div>
-      {debouncedSearchText && isPendingSearchResults ? (
-        <span> searching...</span>
-      ) : null}
+      {debouncedSearchText && isPendingSearchResults && (
+        <div> searching...</div>
+      )}
 
       {/* PRODUCT LIST & MODAL */}
-      <div className="border border-gray-300">
-        {displayProducts?.map((product) => (
-          <Modal
-            key={product.id}
-            buttonTrigger={
-              <ProductCard
-                id={product.id}
-                title={product.title}
-                description={product.description}
-                price={product.price}
-                images={product.images}
-              />
-            }
-          >
-            {/* MODAL CONTENT */}
-            <div className="text-gray-700 space-y-4">
-              <div>
-                <p className="uppercase">{product.category}</p>
-                <h4 className="text-3xl font-semibold text-black">
-                  {product.title}
-                </h4>
-              </div>
-              <p className="font-medium">{product.description}</p>
-              <p className="font-semibold text-black">₱ {product.price}</p>
-              <div className="bg-gray-100 rounded p-4">
-                <p className="font-semibold">MORE IMAGES</p>
-                <div className="flex flex-col md:flex-row justify-evenly items-center">
-                  {product.images.length > 0
-                    ? product.images
-                        .slice(0, 4)
-                        .map((image, index) => (
-                          <img
-                            key={`${product.id}_${index}`}
-                            src={image}
-                            alt={product.title}
-                            className="w-[100px] sm:w-[150px]"
-                          />
-                        ))
-                    : "NO AVAILABLE IMAGES"}
+      {isPending || (debouncedSearchText && isPendingSearchResults) ? (
+        <div className="flex h-[50vh] items-center justify-center">
+          <Spinner className="h-16 w-16" />
+        </div>
+      ) : displayProducts && displayProducts.length > 0 ? (
+        <div className="border border-gray-300">
+          {displayProducts?.map((product) => (
+            <Modal
+              key={product.id}
+              buttonTrigger={<ProductCard product={product} />}
+            >
+              {/* MODAL CONTENT */}
+              <div className="text-gray-700 space-y-4">
+                <div>
+                  <p className="uppercase">{product.category}</p>
+                  <h4 className="text-3xl font-semibold text-black">
+                    {product.title}
+                  </h4>
+                </div>
+                <p className="font-medium">{product.description}</p>
+                <p className="font-semibold text-black">₱ {product.price}</p>
+                <div className="bg-gray-100 rounded p-4">
+                  <p className="font-semibold">MORE IMAGES</p>
+                  <div className="flex flex-col md:flex-row justify-evenly items-center">
+                    {product.images.length > 0
+                      ? product.images
+                          .slice(0, 4)
+                          .map((image, index) => (
+                            <img
+                              key={`${product.id}_${index}`}
+                              src={image}
+                              alt={product.title}
+                              className="w-[100px] sm:w-[150px]"
+                            />
+                          ))
+                      : "NO AVAILABLE IMAGES"}
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    onClick={() => handleAddToCart(product)}
+                    className="flex items-center w-full md:w-auto justify-center"
+                  >
+                    Add to Cart
+                    <span className="ml-2 material-symbols-outlined">
+                      shopping_cart
+                    </span>
+                  </Button>
                 </div>
               </div>
-            </div>
-          </Modal>
-        ))}
-      </div>
+            </Modal>
+          ))}
+        </div>
+      ) : (
+        <div className="border flex items-center justify-center h-[50vh]">
+          NO RESULTS FOUND
+        </div>
+      )}
 
-      {/* PAGINATION FOOTER */}
-      <div>
-        <button onClick={onPrevPageClick} disabled={+page === 1}>
-          Previous
+      {/* PAGINATION */}
+      <div className="flex items-center gap-6 justify-end">
+        <button
+          onClick={onPrevPageClick}
+          disabled={+page === 1}
+          className={`rounded-full px-4 py-3 border ${
+            +page === 1 ? "text-gray-400" : ""
+          }`}
+        >
+          <span className="material-symbols-outlined">arrow_back</span>
         </button>
-        <span> Page {page} </span>
-        <button onClick={onNextPageClick} disabled={isFetching || isLastPage}>
-          Next
+        <span>
+          Page <span className="font-bold">{page}</span>
+        </span>
+        <button
+          onClick={onNextPageClick}
+          disabled={isFetching || isLastPage}
+          className={`rounded-full px-4 py-3 border ${
+            isFetching || isLastPage ? "text-gray-200" : ""
+          }`}
+        >
+          <span className="material-symbols-outlined">arrow_forward</span>
         </button>
       </div>
-      {isFetching ? <span> Loading...</span> : null}
     </div>
   );
 }

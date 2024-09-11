@@ -1,6 +1,18 @@
 import { Product } from "../utils/api";
 
-const ProductCard: React.FC<Product> = (product) => {
+type ProductCardProps = {
+  product: Product;
+  imageClassName?: string;
+  showDescription?: boolean;
+  onRemoveFromCart?: (id: number) => void;
+};
+
+const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  imageClassName,
+  showDescription = true,
+  onRemoveFromCart,
+}) => {
   return (
     <div className="p-4">
       <div className="flex flex-col sm:flex-row gap-x-8">
@@ -9,7 +21,7 @@ const ProductCard: React.FC<Product> = (product) => {
             <img
               src={product.images[0]}
               alt={product.title}
-              className="h-full"
+              className={`h-full ${imageClassName}`}
             />
           ) : (
             "NO IMAGE"
@@ -18,12 +30,31 @@ const ProductCard: React.FC<Product> = (product) => {
         <div className="flex flex-col md:flex-row justify-between w-full gap-8">
           <div className="space-y-2 my-auto">
             <div className="font-semibold">{product.title}</div>
-            <p>{product.description}</p>
+            {showDescription && <p>{product.description}</p>}
           </div>
-          <p className="min-w-[100px] my-auto">
-            <span className="font-bold mr-2">₱</span>
-            {product.price}
-          </p>
+          <div className="min-w-[100px] my-auto">
+            {product.quantity ? (
+              <p className="flex items-center">
+                qty:{" "}
+                <span className="font-semibold text-xl">
+                  {product.quantity}
+                </span>
+                {onRemoveFromCart && (
+                  <button
+                    onClick={() => onRemoveFromCart(product.id)}
+                    className="ml-6 text-red-600"
+                  >
+                    <span className="material-symbols-outlined">delete</span>
+                  </button>
+                )}
+              </p>
+            ) : (
+              <p>
+                <span className="font-bold mr-2">₱</span>
+                {product.price}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
