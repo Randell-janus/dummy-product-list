@@ -113,7 +113,7 @@ function App() {
               <div className="max-w-xl" key={product.id}>
                 <ProductCard
                   product={product}
-                  imageClassName="h-auto w-[100px]"
+                  imageClassName="h-4/5 w-4/5"
                   showDescription={false}
                   onRemoveFromCart={() => handleRemoveFromCart(product.id)}
                 />
