@@ -4,16 +4,25 @@ import App from "./App.tsx";
 import "./index.css";
 import { ThemeProvider } from "@material-tailwind/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+  useParams,
+} from "react-router-dom";
+
+const PageRedirect = () => {
+  const { pageNumber } = useParams<{ pageNumber: string }>();
+  if (pageNumber === "1") {
+    return <Navigate to="/" replace />;
+  }
+  return <App />;
+};
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <App />,
-  },
-  {
-    path: "/page/:pageNumber",
-    element: <App />,
+    path: "/:pageNumber?",
+    element: <PageRedirect />,
   },
 ]);
 

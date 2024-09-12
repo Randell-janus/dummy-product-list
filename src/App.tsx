@@ -35,8 +35,8 @@ function App() {
     setSearchText("");
     handleRedirectToHome();
   };
-  const onNextPageClick = () => navigate(`/page/${+page + 1}`);
-  const onPrevPageClick = () => navigate(`/page/${+page - 1}`);
+  const onNextPageClick = () => navigate(`/${+page + 1}`);
+  const onPrevPageClick = () => navigate(`/${+page - 1}`);
 
   const {
     data: products,
@@ -65,10 +65,10 @@ function App() {
     displayProducts && displayProducts?.length < productsPerPage;
 
   useEffect(() => {
-    if (page == 1 || (searchResults && displayProducts?.length === 0)) {
+    if (searchResults && displayProducts?.length === 0) {
       handleRedirectToHome();
     }
-  }, [page, displayProducts]);
+  }, [displayProducts]);
 
   // redirect on searchText
   useEffect(() => {
