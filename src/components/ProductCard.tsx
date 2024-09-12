@@ -16,12 +16,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <div className="p-4">
       <div className="flex flex-col sm:flex-row gap-x-8">
-        <div className="flex size-40 items-center justify-center shrink-0 m-auto">
+        <div
+          className={`flex items-center justify-center shrink-0 m-auto ${imageClassName}`}
+        >
           {product.images[0] ? (
             <img
               src={product.images[0]}
               alt={product.title}
-              className={`h-full ${imageClassName}`}
+              className="h-full"
             />
           ) : (
             "NO IMAGE"

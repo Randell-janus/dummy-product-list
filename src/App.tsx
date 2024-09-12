@@ -42,6 +42,7 @@ function App() {
     data: products,
     isPending,
     isError,
+    error,
     isFetching,
   } = useQuery<Product[]>({
     queryKey: ["products", page],
@@ -90,7 +91,7 @@ function App() {
     setCartItems(getCartItems());
   }, []);
 
-  if (isError) return <p>Error fetching products</p>;
+  if (isError) console.log("ERROR", error);
 
   return (
     <div className="max-w-screen-xl mx-auto px-8 py-24 space-y-8">
@@ -113,7 +114,7 @@ function App() {
               <div className="max-w-xl" key={product.id}>
                 <ProductCard
                   product={product}
-                  imageClassName="h-4/5 w-4/5"
+                  imageClassName="size-20"
                   showDescription={false}
                   onRemoveFromCart={() => handleRemoveFromCart(product.id)}
                 />
@@ -163,21 +164,25 @@ function App() {
           {displayProducts?.map((product) => (
             <Modal
               key={product.id}
-              buttonTrigger={<ProductCard product={product} />}
+              buttonTrigger={
+                <ProductCard product={product} imageClassName="size-40" />
+              }
             >
               {/* MODAL CONTENT */}
               <div className="text-gray-700 space-y-4">
                 <div>
                   <p className="uppercase">{product.category}</p>
-                  <h4 className="text-3xl font-semibold text-black">
+                  <h4 className="text-xl md:text-3xl font-semibold text-black">
                     {product.title}
                   </h4>
                 </div>
-                <p className="font-medium">{product.description}</p>
+                <p className="font-medium text-sm md:text-base line-clamp-3 md:line-clamp-0">
+                  {product.description}
+                </p>
                 <p className="font-semibold text-black">₱ {product.price}</p>
                 <div className="bg-gray-100 rounded p-4">
                   <p className="font-semibold">MORE IMAGES</p>
-                  <div className="flex flex-col md:flex-row justify-evenly items-center">
+                  <div className="flex justify-evenly items-center overflow-x-auto py-4">
                     {product.images.length > 0
                       ? product.images
                           .slice(0, 4)
@@ -186,7 +191,7 @@ function App() {
                               key={`${product.id}_${index}`}
                               src={image}
                               alt={product.title}
-                              className="w-[100px] sm:w-[150px]"
+                              className="max-w-[90px] md:max-w-none md:w-[150px]"
                             />
                           ))
                       : "NO AVAILABLE IMAGES"}
